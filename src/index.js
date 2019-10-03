@@ -46,18 +46,6 @@ function patchJestAPI({
   let uniqueIdentifier = 0;
   const uuid = () => ++uniqueIdentifier;
 
-  const testNeedsAssertionCheck = () => {
-    // Some misconfigured test (eg overriding expect itself)
-    if (!(typeof expect !== 'undefined' && 'getState' in expect)) {
-      return false;
-    }
-    const state = expect.getState();
-    return (
-      typeof state.expectedAssertionsNumber !== 'number' &&
-      !state.isExpectingAssertions
-    );
-  };
-
   const exitZone = () => (currentZone = null);
   const enterZone = (callback, name, hasDoneCallback) => {
     const id = uuid();
@@ -120,10 +108,6 @@ function patchJestAPI({
       return () => {
         const result = enterZone(fn, name, false)();
 
-        if (testNeedsAssertionCheck()) {
-          expect.hasAssertions();
-        }
-
         if (
           typeof result === 'object' &&
           result != null &&
@@ -146,10 +130,6 @@ function patchJestAPI({
         doneOriginal();
       };
       const result = enterZone(fn, name, true)(done, ...args);
-
-      if (testNeedsAssertionCheck()) {
-        expect.hasAssertions();
-      }
 
       return result;
     };
