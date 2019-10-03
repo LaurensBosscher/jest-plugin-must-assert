@@ -62,11 +62,11 @@ function patchJestAPI({
           }
           throw e;
         },
-        onInvokeTask(delegate, current, target, task, applyThis, applyArgs) {
+        async onInvokeTask(delegate, current, target, task, applyThis, applyArgs) {
           let error;
           let result = true;
           try {
-            result = onInvokeTask({
+            result = await onInvokeTask({
               originZoneId: current.get('id'),
               currentZoneId: currentZone,
               testName: name,
@@ -148,7 +148,8 @@ function patchJestAPI({
     if (
       typeof global.test[key] === 'function' &&
       key !== 'each' &&
-      key !== 'skip'
+      key !== 'skip' &&
+      key !== 'todo'
     ) {
       enhancedTest[key] = enhanceJestImplementationWithAssertionCheck(
         global.test[key]
